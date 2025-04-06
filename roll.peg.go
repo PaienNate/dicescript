@@ -788,36 +788,24 @@ var g = &grammar{
 		},
 		{
 			name: "nestedBoost",
-			expr: &choiceExpr{
-				alternatives: []any{
-					&seqExpr{
-						exprs: []any{
-							&andExpr{
-								expr: &seqExpr{
-									exprs: []any{
-										&ruleIRefExpr{index: 102 /* subX */},
-										&ruleIRefExpr{index: 122 /* sp */},
-										&charClassMatcher{
-											val:   "[-+*/%^dDcCaA&|?<>=]",
-											chars: []rune{'-', '+', '*', '/', '%', '^', 'd', 'D', 'c', 'C', 'a', 'A', '&', '|', '?', '<', '>', '='},
-										},
+			expr: &seqExpr{
+				exprs: []any{
+					&ruleIRefExpr{index: 102 /* subX */},
+					&zeroOrOneExpr{
+						expr: &seqExpr{
+							exprs: []any{
+								&ruleIRefExpr{index: 122 /* sp */},
+								&charClassMatcher{
+									val:   "[-+*/%^dDcCaA&|?<>=]",
+									chars: []rune{'-', '+', '*', '/', '%', '^', 'd', 'D', 'c', 'C', 'a', 'A', '&', '|', '?', '<', '>', '='},
+								},
+								&choiceExpr{
+									alternatives: []any{
+										&ruleIRefExpr{index: 24 /* stmtAssign */},
+										&ruleIRefExpr{index: 30 /* exprSlice */},
 									},
 								},
 							},
-							&choiceExpr{
-								alternatives: []any{
-									&ruleIRefExpr{index: 24 /* stmtAssign */},
-									&ruleIRefExpr{index: 30 /* exprSlice */},
-								},
-							},
-						},
-					},
-					&seqExpr{
-						exprs: []any{
-							&andExpr{
-								expr: &ruleIRefExpr{index: 102 /* subX */},
-							},
-							&ruleIRefExpr{index: 102 /* subX */},
 						},
 					},
 				},
@@ -6258,19 +6246,18 @@ func (p *parser) addErrAt(err error, pos position, expected []string) {
 	if buf.Len() > 0 {
 		buf.WriteString(":")
 	}
-	buf.WriteString(fmt.Sprintf("%d:%d", pos.line, pos.col))
+	buf.WriteString(fmt.Sprintf("%d:%d (%d)", pos.line, pos.col, pos.offset))
 	if len(p.rstack) > 0 {
 		if buf.Len() > 0 {
-			buf.WriteString(" ")
+			buf.WriteString(": ")
 		}
 		rule := p.rstack[len(p.rstack)-1]
 		if rule.displayName != "" {
-			buf.WriteString(rule.displayName[1:len(rule.displayName)-1])
+			buf.WriteString("rule " + rule.displayName)
 		} else {
-			buf.WriteString(rule.name)
+			buf.WriteString("rule " + rule.name)
 		}
 	}
-	// x(p.filename, pos.line, pos.col, pos.offset, ruleName)
 	pe := &parserError{Inner: err, pos: pos, prefix: buf.String(), expected: expected}
 	p.errs.add(pe)
 }

@@ -144,7 +144,10 @@ stmtAssign <- &stmtAssignType1 stmtAssignType1
 
 // exprRoot <- exprSlice sp
 // 注: 这个优化还是比较关键的，能节省大量回溯，但是开启memoized后我说不准
-nestedBoost <- &(subX sp [-+*/%^dDcCaA&|?<>=]) (stmtAssign / exprSlice) / &subX subX
+// 目前可以确认这个代码会在莫名其妙的时候大爆炸，GPT教我改了一下
+// nestedBoost <- &(subX sp [-+*/%^dDcCaA&|?<>=]) (stmtAssign / exprSlice) / &subX subX
+// exprRoot <- nestedBoost / stmtAssign / exprSlice
+nestedBoost <- subX (sp [-+*/%^dDcCaA&|?<>=] (stmtAssign / exprSlice))?
 exprRoot <- nestedBoost / stmtAssign / exprSlice
 
 _step <- (':' sp (exprRoot / sp { c.data.PushNull() }) / sp { c.data.PushNull() })

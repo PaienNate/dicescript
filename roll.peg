@@ -147,7 +147,11 @@ stmtAssign <- &stmtAssignType1 stmtAssignType1
 // 目前可以确认这个代码会在莫名其妙的时候大爆炸，GPT教我改了一下
 // nestedBoost <- &(subX sp [-+*/%^dDcCaA&|?<>=]) (stmtAssign / exprSlice) / &subX subX
 // exprRoot <- nestedBoost / stmtAssign / exprSlice
-nestedBoost <- subX (sp [-+*/%^dDcCaA&|?<>=] (stmtAssign / exprSlice))?
+// 下面这两个方法是GPT写的，试了试并不是OKAY
+// nestedBoost <- subX (sp [-+*/%^dDcCaA&|?<>=] (stmtAssign / exprSlice))?
+// exprRoot <- nestedBoost / stmtAssign / exprSlice
+// 这俩是Claude写的，瞧瞧实力
+nestedBoost <- subX sp [-+*/%^dDcCaA&|?<>=] (stmtAssign / exprSlice) / subX
 exprRoot <- nestedBoost / stmtAssign / exprSlice
 
 _step <- (':' sp (exprRoot / sp { c.data.PushNull() }) / sp { c.data.PushNull() })
